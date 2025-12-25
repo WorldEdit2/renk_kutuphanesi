@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renk Kütüphanesi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;700&display=swap');
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+
+        /* Ana Vitrin Alanı */
+        .hero {
+            height: 60vh;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: linear-gradient({{ current.angle }}deg, {{ current.color1 }}, {{ current.color2 }});
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        h1 { margin: 0 0 10px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+        .btn-refresh { background: white; color: #333; }
+        .btn-save { background: #ff4757; color: white; }
+        .btn:hover { transform: scale(1.05); }
+
+        /* Favoriler Galerisi */
+        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .fav-card {
+            height: 150px;
+            border-radius: 12px;
+            position: relative;
+            transition: transform 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .fav-card:hover { transform: translateY(-5px); }
+        
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .delete-btn:hover { background: red; }
+
+        .color-codes {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.6);
+            padding: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="glass-card">
+            <h1>Mood: {{ current.color1 }} -> {{ current.color2 }}</h1>
+            <button class="btn btn-refresh" onclick="location.reload()">🔄 Yeni Renk</button>
+            <button class="btn btn-save" onclick="saveColors()">❤️ Favorilere Ekle</button>
+        </div>
+    </div>
+
+    <h2>Koleksiyonum</h2>
+    <div class="gallery">
+        {% for row in favorites %}
+        <div class="fav-card" style="background: linear-gradient({{ row[3] }}deg, {{ row[1] }}, {{ row[2] }});">
+            <a href="/delete/{{ row[0] }}" class="delete-btn" onclick="return confirm('Silinsin mi?')">x</a>
+            <div class="color-codes">
+                {{ row[1] }} - {{ row[2] }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function saveColors() {
+            const data = {
+                color1: "{{ current.color1 }}",
+                color2: "{{ current.color2 }}",
+                angle: {{ current.angle }}
+            };
+
+            fetch('/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(() => {
+                // Kaydettikten sonra sayfayı yenile ki aşağıda görelim
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
